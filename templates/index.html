@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dünya Kupası 2026 - Kurulum</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        h1, h2, h3, h4 { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+
+        .draw-btn {
+            background: linear-gradient(90deg, #ca8a04 0%, #eab308 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(234, 179, 8, 0.4);
+        }
+        .draw-btn:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(234, 179, 8, 0.7); }
+
+        select {
+            background-color: #1e293b;
+            color: white;
+            border: 1px solid #475569;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        select:hover { border-color: #ca8a04; }
+    </style>
+</head>
+<body class="flex flex-col items-center py-10 px-4">
+
+    <header class="text-center mb-10">
+        <h1 class="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-2 drop-shadow-lg">
+            WORLD CUP 2026
+        </h1>
+        <p class="text-gray-400 text-lg tracking-widest">KURA KURULUM EKRANI</p>
+    </header>
+
+    <div class="absolute top-6 right-6">
+        <a href="/analysis" class="text-gray-400 hover:text-yellow-500 transition flex items-center gap-2 text-sm font-bold border border-gray-600 px-4 py-2 rounded-full hover:border-yellow-500">
+            <i class="fas fa-chart-line"></i> ANALİZ MERKEZİ
+        </a>
+    </div>
+
+    <div class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
+        
+        <div class="lg:col-span-7 bg-slate-900/80 backdrop-blur-md border border-gray-700 rounded-2xl overflow-hidden shadow-2xl h-fit">
+            <div class="bg-gradient-to-r from-yellow-600 to-yellow-500 p-3 text-center shadow-lg">
+                <h3 class="text-black font-bold text-lg tracking-wider flex justify-center items-center gap-2">
+                    <i class="fas fa-users-cog"></i> PLAY-OFF KAZANANLARINI BELİRLE
+                </h3>
+            </div>
+            
+            <div class="p-6">
+                <p class="text-sm text-gray-400 mb-4 text-center">
+                    İstediğin takımı seçebilir veya <span class="text-yellow-500 font-bold">Simülasyona Bırak</span> diyerek şansa bırakabilirsin.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-3 bg-gray-800 rounded border border-gray-700">
+                        <label class="block text-xs text-yellow-500 font-bold mb-1">UEFA Path A</label>
+                        <select id="po-a">
+                            <option value="random">🎲 Simülasyona Bırak</option>
+                            <option value='{"isim":"Italy","kitalar":["EU"]}'>Italy (ITA)</option>
+                            <option value='{"isim":"N. Ireland","kitalar":["EU"]}'>N. Ireland (NIR)</option>
+                            <option value='{"isim":"Wales","kitalar":["EU"]}'>Wales (WAL)</option>
+                            <option value='{"isim":"Bosnia","kitalar":["EU"]}'>Bosnia (BIH)</option>
+                        </select>
+                    </div>
+                    <div class="p-3 bg-gray-800 rounded border border-gray-700">
+                        <label class="block text-xs text-yellow-500 font-bold mb-1">UEFA Path B</label>
+                        <select id="po-b">
+                            <option value="random">🎲 Simülasyona Bırak</option>
+                            <option value='{"isim":"Ukraine","kitalar":["EU"]}'>Ukraine (UKR)</option>
+                            <option value='{"isim":"Sweden","kitalar":["EU"]}'>Sweden (SWE)</option>
+                            <option value='{"isim":"Poland","kitalar":["EU"]}'>Poland (POL)</option>
+                            <option value='{"isim":"Albania","kitalar":["EU"]}'>Albania (ALB)</option>
+                        </select>
+                    </div>
+                    <div class="p-3 bg-gray-800 rounded border border-gray-700">
+                        <label class="block text-xs text-yellow-500 font-bold mb-1">UEFA Path C</label>
+                        <select id="po-c">
+                            <option value="random">🎲 Simülasyona Bırak</option>
+                            <option value='{"isim":"Türkiye","kitalar":["EU"]}' selected>Türkiye (TUR)</option>
+                            <option value='{"isim":"Romania","kitalar":["EU"]}'>Romania (ROU)</option>
+                            <option value='{"isim":"Slovakia","kitalar":["EU"]}'>Slovakia (SVK)</option>
+                            <option value='{"isim":"Kosovo","kitalar":["EU"]}'>Kosovo (KOS)</option>
+                        </select>
+                    </div>
+                    <div class="p-3 bg-gray-800 rounded border border-gray-700">
+                        <label class="block text-xs text-yellow-500 font-bold mb-1">UEFA Path D</label>
+                        <select id="po-d">
+                            <option value="random">🎲 Simülasyona Bırak</option>
+                            <option value='{"isim":"Denmark","kitalar":["EU"]}'>Denmark (DEN)</option>
+                            <option value='{"isim":"N. Macedonia","kitalar":["EU"]}'>N. Macedonia (MKD)</option>
+                            <option value='{"isim":"Czechia","kitalar":["EU"]}'>Czechia (CZE)</option>
+                            <option value='{"isim":"Ireland","kitalar":["EU"]}'>Ireland (IRL)</option>
+                        </select>
+                    </div>
+                    <div class="p-3 bg-gray-800 rounded border border-gray-700">
+                        <label class="block text-xs text-yellow-500 font-bold mb-1">FIFA Play-off 1</label>
+                        <select id="po-f1">
+                            <option value="random">🎲 Simülasyona Bırak</option>
+                            <option value='{"isim":"Jamaica","kitalar":["NA"]}'>Jamaica (NA)</option>
+                            <option value='{"isim":"DR Congo","kitalar":["AF"]}'>DR Congo (AF)</option>
+                            <option value='{"isim":"New Caledonia","kitalar":["OC"]}'>N. Caledonia (OC)</option>
+                        </select>
+                    </div>
+                    <div class="p-3 bg-gray-800 rounded border border-gray-700">
+                        <label class="block text-xs text-yellow-500 font-bold mb-1">FIFA Play-off 2</label>
+                        <select id="po-f2">
+                            <option value="random">🎲 Simülasyona Bırak</option>
+                            <option value='{"isim":"Iraq","kitalar":["AS"]}'>Iraq (AS)</option>
+                            <option value='{"isim":"Bolivia","kitalar":["SA"]}'>Bolivia (SA)</option>
+                            <option value='{"isim":"Suriname","kitalar":["NA"]}'>Suriname (NA)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-5 bg-slate-900/80 backdrop-blur-md border border-gray-700 rounded-2xl overflow-hidden shadow-2xl h-fit">
+            <div class="bg-gray-800 p-3 text-center border-b border-gray-700">
+                <h3 class="text-white font-bold text-lg tracking-wider flex justify-center items-center gap-2">
+                    <i class="fas fa-gavel text-yellow-500"></i> KURALLAR VE TAKIMLAR
+                </h3>
+            </div>
+            
+            <div class="p-6 pb-2">
+                <ul class="space-y-4 text-gray-300">
+                    <li class="relative pl-7 text-sm">
+                        <i class="fas fa-thumbtack text-green-500 absolute left-0 top-1"></i>
+                        <strong class="text-white">Ev Sahipleri Sabit:</strong> Meksika (A), Kanada (B), ABD (D).
+                    </li>
+                    <li class="relative pl-7 text-sm">
+                        <i class="fas fa-globe text-blue-500 absolute left-0 top-1"></i>
+                        <strong class="text-white">Kıta Ayrımı:</strong> UEFA hariç aynı kıta takımları eşleşemez.
+                    </li>
+                    <li class="relative pl-7 text-sm">
+                        <i class="fas fa-users text-purple-500 absolute left-0 top-1"></i>
+                        <strong class="text-white">UEFA Limiti:</strong> Gruplarda en az 1, en fazla 2 Avrupa takımı.
+                    </li>
+                </ul>
+            </div>
+
+             <div class="px-6 pb-6 pt-2 border-t border-gray-700/50 mt-2">
+                <h4 class="text-xs text-yellow-500 font-bold mb-3 uppercase tracking-widest text-center border-b border-gray-700 pb-2">
+                    <i class="fas fa-layer-group mr-1"></i> Torba Dağılımı
+                </h4>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] leading-tight text-gray-400">
+                    <div>
+                        <div class="text-white font-bold bg-gray-800 text-center rounded mb-1 py-1">POT 1</div>
+                        <ul class="text-center">
+                            <li class="text-yellow-500 font-bold">Meksika (H)</li>
+                            <li class="text-yellow-500 font-bold">Kanada (H)</li>
+                            <li class="text-yellow-500 font-bold">ABD (H)</li>
+                            <li>İspanya</li><li>Arjantin</li><li>Fransa</li><li>İngiltere</li><li>Brezilya</li><li>Portekiz</li><li>Hollanda</li><li>Belçika</li><li>Almanya</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="text-white font-bold bg-gray-800 text-center rounded mb-1 py-1">POT 2</div>
+                        <ul class="text-center"><li>Hırvatistan</li><li>Fas</li><li>Kolombiya</li><li>Uruguay</li><li>İsviçre</li><li>Japonya</li><li>Senegal</li><li>İran</li><li>G. Kore</li><li>Ekvador</li><li>Avusturya</li><li>Avustralya</li></ul>
+                    </div>
+                    <div>
+                        <div class="text-white font-bold bg-gray-800 text-center rounded mb-1 py-1">POT 3</div>
+                        <ul class="text-center"><li>Norveç</li><li>Panama</li><li>Mısır</li><li>Cezayir</li><li>İskoçya</li><li>Paraguay</li><li>Tunus</li><li>Fildişi Sahili</li><li>Özbekistan</li><li>Katar</li><li>S. Arabistan</li><li>G. Afrika</li></ul>
+                    </div>
+                    <div>
+                        <div class="text-white font-bold bg-gray-800 text-center rounded mb-1 py-1">POT 4</div>
+                        <ul class="text-center"><li>Ürdün</li><li>Yeşil Burun</li><li>Gana</li><li>Curaçao</li><li>Haiti</li><li>Y. Zelanda</li><li class="text-green-400 italic">Play-off'lar</li></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <button onclick="goToResults()" class="draw-btn text-black font-bold py-4 px-12 rounded-full text-xl flex items-center gap-3 mx-auto shadow-xl ring-4 ring-yellow-500/20 active:scale-95 transition-transform">
+            KURA ÇEK <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <footer class="mt-20 text-gray-500 text-sm mb-6">
+        Ahmet Ertuğrul Çil & Gemini işbirliği ile hazırlanmıştır.
+    </footer>
+
+    <script>
+        function goToResults() {
+            const ids = ['po-a', 'po-b', 'po-c', 'po-d', 'po-f1', 'po-f2'];
+            const selections = {};
+            
+            ids.forEach(id => {
+                const select = document.getElementById(id);
+                selections[id] = select.value;
+            });
+
+            localStorage.setItem('wc2026_selections', JSON.stringify(selections));
+            window.location.href = '/results';
+        }
+    </script>
+</body>
+</html>

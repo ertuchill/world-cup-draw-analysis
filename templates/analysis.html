@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WC 2026 - Analysis Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: white;
+            height: 100vh;
+            overflow: hidden; 
+        }
+        
+        h1, h2, h3 { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+
+        /* Sol Sidebar Stili */
+        .sidebar {
+            background: rgba(15, 23, 42, 0.95);
+            border-right: 1px solid #334155;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .country-item {
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .country-item:hover {
+            background-color: #1e293b;
+            border-left-color: #ca8a04;
+        }
+        .country-item.active {
+            background: linear-gradient(90deg, #ca8a04 0%, transparent 100%);
+            border-left-color: white;
+            color: white;
+        }
+        /* Active iken içindeki metin renklerini korumak için */
+        .country-item.active span {
+            color: white !important;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .progress-bar { transition: width 1s ease-in-out; }
+    </style>
+</head>
+<body class="flex">
+
+    <aside class="w-1/4 min-w-[320px] sidebar z-10 shadow-2xl">
+        <div class="p-6 border-b border-gray-700 bg-slate-900">
+            <h2 class="text-2xl text-yellow-500 font-bold mb-1"><i class="fas fa-chart-pie mr-2"></i> ANALYSIS</h2>
+            <p class="text-xs text-gray-400">OPPONENT STATISTICS (SIMULATION)</p>
+            
+            <div class="mt-4 relative">
+                <input type="text" id="searchInput" onkeyup="filterCountries()" placeholder="Search Country..." 
+                    class="w-full bg-slate-800 border border-gray-600 rounded p-2 pl-8 text-sm text-gray-300 focus:outline-none focus:border-yellow-500">
+                <i class="fas fa-search absolute left-3 top-3 text-gray-500 text-xs"></i>
+            </div>
+        </div>
+
+        <div id="countryList" class="flex-1 overflow-y-auto">
+            </div>
+
+        <div class="p-4 border-t border-gray-700 bg-slate-900">
+            <a href="/" class="flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-white transition">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+        </div>
+    </aside>
+
+    <main class="w-3/4 h-full bg-gradient-to-br from-slate-900 to-slate-800 relative overflow-y-auto">
+        
+        <div class="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
+            <i class="fas fa-globe-americas text-9xl"></i>
+        </div>
+
+        <div class="p-10 max-w-5xl mx-auto">
+            
+            <div id="headerSection" class="mb-10 flex items-center gap-6 fade-in">
+                <div class="w-20 h-20 rounded-full bg-slate-700 flex items-center justify-center text-3xl shadow-lg border-2 border-yellow-500">
+                    <i class="fas fa-flag text-gray-300"></i>
+                </div>
+                <div>
+                    <h1 id="selectedCountryName" class="text-5xl font-bold text-white mb-2">SELECT A COUNTRY</h1>
+                    <span id="selectedCountryPot" class="bg-gray-700 text-gray-300 px-3 py-1 rounded text-sm font-mono border border-gray-600">---</span>
+                </div>
+            </div>
+
+            <div id="statsSection" class="bg-slate-800/50 backdrop-blur-md rounded-xl border border-gray-700 overflow-hidden shadow-xl hidden">
+                <div class="p-4 bg-slate-900/80 border-b border-gray-700 flex justify-between items-center">
+                    <h3 class="text-yellow-500 font-bold">POSSIBLE OPPONENTS & PROBABILITIES</h3>
+                    <span class="text-xs text-gray-500"><i class="fas fa-info-circle"></i> Based on Simulation Data</span>
+                </div>
+                
+                <div class="p-6">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-gray-400 text-sm border-b border-gray-700">
+                                <th class="py-3 px-4">OPPONENT</th>
+                                <th class="py-3 px-4">CONFEDERATION</th>
+                                <th class="py-3 px-4 w-1/2">PROBABILITY (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="opponentsTableBody" class="text-gray-200">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="emptyState" class="text-center text-gray-500 mt-20">
+                <i class="fas fa-chart-bar text-6xl mb-4 opacity-20"></i>
+                <p>Select a country from the list to view analysis.</p>
+                <p class="text-xs text-yellow-600 mt-2" id="dataWarning" style="display:none;">
+                    <i class="fas fa-exclamation-triangle"></i> 'analysis_data.js' not found in static folder.
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='analysis_data.js') }}"></script>
+
+    <script>
+        // --- 1. VERİ HAVUZU (TAM LİSTE - 64 TAKIM) ---
+        const allCountries = [
+            // --- POT 1 (12 Teams) ---
+            { name: "Mexico", pot: "Pot 1", kita: "NA" },
+            { name: "Canada", pot: "Pot 1", kita: "NA" },
+            { name: "USA", pot: "Pot 1", kita: "NA" },
+            { name: "Spain", pot: "Pot 1", kita: "EU" },
+            { name: "Argentina", pot: "Pot 1", kita: "SA" },
+            { name: "France", pot: "Pot 1", kita: "EU" },
+            { name: "England", pot: "Pot 1", kita: "EU" },
+            { name: "Brazil", pot: "Pot 1", kita: "SA" },
+            { name: "Portugal", pot: "Pot 1", kita: "EU" },
+            { name: "Netherlands", pot: "Pot 1", kita: "EU" },
+            { name: "Belgium", pot: "Pot 1", kita: "EU" },
+            { name: "Germany", pot: "Pot 1", kita: "EU" },
+
+            // --- POT 2 (12 Teams) ---
+            { name: "Croatia", pot: "Pot 2", kita: "EU" },
+            { name: "Morocco", pot: "Pot 2", kita: "AF" },
+            { name: "Colombia", pot: "Pot 2", kita: "SA" },
+            { name: "Uruguay", pot: "Pot 2", kita: "SA" },
+            { name: "Switzerland", pot: "Pot 2", kita: "EU" },
+            { name: "Japan", pot: "Pot 2", kita: "AS" },
+            { name: "Senegal", pot: "Pot 2", kita: "AF" },
+            { name: "IR Iran", pot: "Pot 2", kita: "AS" },
+            { name: "Korea Republic", pot: "Pot 2", kita: "AS" },
+            { name: "Ecuador", pot: "Pot 2", kita: "SA" },
+            { name: "Austria", pot: "Pot 2", kita: "EU" },
+            { name: "Australia", pot: "Pot 2", kita: "AS" },
+
+            // --- POT 3 (12 Teams) ---
+            { name: "Norway", pot: "Pot 3", kita: "EU" },
+            { name: "Panama", pot: "Pot 3", kita: "NA" },
+            { name: "Egypt", pot: "Pot 3", kita: "AF" },
+            { name: "Algeria", pot: "Pot 3", kita: "AF" },
+            { name: "Scotland", pot: "Pot 3", kita: "EU" },
+            { name: "Paraguay", pot: "Pot 3", kita: "SA" },
+            { name: "Tunisia", pot: "Pot 3", kita: "AF" },
+            { name: "Côte d'Ivoire", pot: "Pot 3", kita: "AF" },
+            { name: "Uzbekistan", pot: "Pot 3", kita: "AS" },
+            { name: "Qatar", pot: "Pot 3", kita: "AS" },
+            { name: "Saudi Arabia", pot: "Pot 3", kita: "AS" },
+            { name: "South Africa", pot: "Pot 3", kita: "AF" },
+
+            // --- POT 4 FIXED (6 Teams) ---
+            { name: "Jordan", pot: "Pot 4", kita: "AS" },
+            { name: "Cabo Verde", pot: "Pot 4", kita: "AF" },
+            { name: "Ghana", pot: "Pot 4", kita: "AF" },
+            { name: "Curaçao", pot: "Pot 4", kita: "NA" },
+            { name: "Haiti", pot: "Pot 4", kita: "NA" },
+            { name: "New Zealand", pot: "Pot 4", kita: "OC" },
+
+            // --- POT 4 CANDIDATES (PLAY-OFF) - 22 Teams ---
+            { name: "Italy", pot: "UEFA Path A", kita: "EU" },
+            { name: "N. Ireland", pot: "UEFA Path A", kita: "EU" },
+            { name: "Wales", pot: "UEFA Path A", kita: "EU" },
+            { name: "Bosnia & Herz.", pot: "UEFA Path A", kita: "EU" },
+            
+            { name: "Ukraine", pot: "UEFA Path B", kita: "EU" },
+            { name: "Sweden", pot: "UEFA Path B", kita: "EU" },
+            { name: "Poland", pot: "UEFA Path B", kita: "EU" },
+            { name: "Albania", pot: "UEFA Path B", kita: "EU" },
+            
+            { name: "Türkiye", pot: "UEFA Path C", kita: "EU" },
+            { name: "Romania", pot: "UEFA Path C", kita: "EU" },
+            { name: "Slovakia", pot: "UEFA Path C", kita: "EU" },
+            { name: "Kosovo", pot: "UEFA Path C", kita: "EU" },
+            
+            { name: "Denmark", pot: "UEFA Path D", kita: "EU" },
+            { name: "N. Macedonia", pot: "UEFA Path D", kita: "EU" },
+            { name: "Czechia", pot: "UEFA Path D", kita: "EU" },
+            { name: "Ireland", pot: "UEFA Path D", kita: "EU" },
+            
+            { name: "Jamaica", pot: "FIFA PO 1", kita: "NA" },
+            { name: "DR Congo", pot: "FIFA PO 1", kita: "AF" },
+            { name: "New Caledonia", pot: "FIFA PO 1", kita: "OC" },
+            
+            { name: "Iraq", pot: "FIFA PO 2", kita: "AS" },
+            { name: "Bolivia", pot: "FIFA PO 2", kita: "SA" },
+            { name: "Suriname", pot: "FIFA PO 2", kita: "NA" }
+        ];
+
+        // --- 2. REFERANS RAKİP LİSTESİ (Düzeltilmiş) ---
+        const referenceOpponents = [
+            // Pot 1
+            "Mexico", "Canada", "USA", "Spain", "Argentina", "France", "England", "Brazil", "Portugal", "Netherlands", "Belgium", "Germany",
+            // Pot 2
+            "Croatia", "Morocco", "Colombia", "Uruguay", "Switzerland", "Japan", "Senegal", "IR Iran", "Korea Republic", "Ecuador", "Austria", "Australia",
+            // Pot 3
+            "Norway", "Panama", "Egypt", "Algeria", "Scotland", "Paraguay", "Tunisia", "Côte d'Ivoire", "Uzbekistan", "Qatar", "Saudi Arabia", "South Africa",
+            // Pot 4 Fixed
+            "Jordan", "Cabo Verde", "Ghana", "Curaçao", "Haiti", "New Zealand",
+            // Play-off Slots (Genel İsimler)
+            "UEFA Path A", "UEFA Path B", "UEFA Path C", "UEFA Path D", "FIFA PO 1", "FIFA PO 2"
+        ];
+
+        // Sayfa Yüklendiğinde Listeyi Doldur
+        document.addEventListener('DOMContentLoaded', () => {
+            const listContainer = document.getElementById('countryList');
+            allCountries.sort((a, b) => a.name.localeCompare(b.name));
+
+            // Veri dosyası yüklendi mi kontrol et
+            if (typeof analysisData === 'undefined') {
+                document.getElementById('dataWarning').style.display = 'block';
+            }
+
+            allCountries.forEach(country => {
+                const div = document.createElement('div');
+                const isPlayoff = country.pot.includes("Path") || country.pot.includes("FIFA");
+                
+                div.className = `country-item p-4 border-b border-gray-800 flex justify-between items-center text-gray-200`;
+                
+                let badgeClass = isPlayoff ? "bg-gray-800/50 text-gray-600 border border-gray-700/30" : "bg-yellow-900/30 text-yellow-500 border border-yellow-700/30";
+                
+                let nameHtml = `<span class="font-medium text-sm text-gray-200">${country.name}</span>`;
+                if (country.name === "Türkiye") {
+                    nameHtml = `<span class="font-bold text-sm text-green-400">Türkiye</span>`;
+                }
+                if (isPlayoff) {
+                    nameHtml += ` <span class="text-[10px] text-gray-500 italic ml-1 font-normal">(if qualifies)</span>`;
+                }
+
+                div.innerHTML = `
+                    <div class="flex items-center">${nameHtml}</div>
+                    <span class="text-[10px] px-2 py-1 rounded ${badgeClass} truncate max-w-[100px]" title="${country.pot}">${country.pot}</span>
+                `;
+                div.onclick = () => selectCountry(country, div);
+                listContainer.appendChild(div);
+            });
+        });
+
+        function filterCountries() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const items = document.getElementsByClassName('country-item');
+            for (let i = 0; i < items.length; i++) {
+                const txtValue = items[i].textContent || items[i].innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) items[i].style.display = "";
+                else items[i].style.display = "none";
+            }
+        }
+
+        function selectCountry(country, element) {
+            document.querySelectorAll('.country-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            document.getElementById('selectedCountryName').innerText = country.name;
+            document.getElementById('selectedCountryPot').innerText = `${country.pot} | ${country.kita}`;
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('statsSection').classList.remove('hidden');
+
+            const tbody = document.getElementById('opponentsTableBody');
+            tbody.innerHTML = '';
+
+            // --- DATA YÖNETİMİ ---
+            // Eğer analysisData yüklü değilse hata verme
+            if (typeof analysisData === 'undefined') {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-400">Error: analysis_data.js not loaded. Check static folder.</td></tr>';
+                return;
+            }
+
+            const countryData = analysisData[country.name];
+
+            if (countryData) {
+                // --- %0 OLANLARI HESAPLA ---
+                let fullList = [];
+
+                referenceOpponents.forEach(oppName => {
+                    // Kendisiyle eşleşemez
+                    if (oppName === country.name) return;
+                    
+                    // Kendi torbasıyla eşleşemez (Basit kontrol: Playoff ismi içeriyorsa ve kendisi de oysa)
+                    if (country.pot.includes(oppName)) return; 
+
+                    // Veride var mı?
+                    // Not: Veride "UEFA PATH C" büyük harf olabilir, case-insensitive bakalım
+                    const found = countryData.find(d => d.name.toUpperCase() === oppName.toUpperCase());
+                    
+                    if (found) {
+                        fullList.push(found);
+                    } else {
+                        // Yoksa %0 olarak ekle
+                        let oppKita = "---";
+                        if(oppName.includes("UEFA")) oppKita = "EU";
+                        else if(oppName.includes("FIFA")) oppKita = "MIX";
+                        else {
+                            const cInfo = allCountries.find(c => c.name === oppName);
+                            if(cInfo) oppKita = cInfo.kita;
+                        }
+                        
+                        fullList.push({ name: oppName, kita: oppKita, prob: 0 });
+                    }
+                });
+
+                // Sıralama
+                fullList.sort((a, b) => b.prob - a.prob);
+
+                // Basma
+                fullList.forEach(op => {
+                    const barWidth = Math.min(op.prob * 4, 100);
+                    
+                    // Kıta bulma
+                    let oppContinent = op.kita || "---";
+                    if (oppContinent === "---") {
+                         if(op.name.includes("UEFA")) oppContinent = "EU";
+                         else if(op.name.includes("FIFA")) oppContinent = "MIX";
+                         else {
+                            const cInfo = allCountries.find(c => c.name === op.name);
+                            if(cInfo) oppContinent = cInfo.kita;
+                         }
+                    }
+
+                    const rowOpacity = op.prob === 0 ? "opacity-50" : "opacity-100";
+                    const probColor = op.prob === 0 ? "text-gray-600" : "text-yellow-500";
+
+                    const row = document.createElement('tr');
+                    row.className = `border-b border-gray-700/50 hover:bg-slate-700/30 transition ${rowOpacity}`;
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-medium text-gray-300">${op.name}</td>
+                        <td class="py-3 px-4 text-xs text-gray-500 font-mono">${oppContinent}</td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm font-bold ${probColor} w-12 text-right">${op.prob}%</span>
+                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                    <div class="bg-yellow-500 h-2 rounded-full progress-bar shadow-[0_0_10px_rgba(234,179,8,0.5)]" style="width: ${barWidth}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-500">No data found for this country.</td></tr>';
+            }
+        }
+    </script>
+</body>
+</html>
