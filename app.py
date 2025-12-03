@@ -3,13 +3,10 @@ import random
 
 app = Flask(__name__)
 
-# --- VERİ YAPISI ---
-# Artık 'kita' yerine 'kitalar' listesi kullanıyoruz.
-# Böylece bir Play-off topu birden fazla kıtayı temsil edebiliyor.
-
+# --- DATASETS ---
+# Base pots configuration. Pot 4 includes fixed teams; Play-off winners are dynamic.
 BASE_POTS = {
     1: [
-        # Ev sahipleri manuel eklenecek
         {"isim": "Spain", "kitalar": ["EU"]}, {"isim": "Argentina", "kitalar": ["SA"]}, 
         {"isim": "France", "kitalar": ["EU"]}, {"isim": "England", "kitalar": ["EU"]}, 
         {"isim": "Brazil", "kitalar": ["SA"]}, {"isim": "Portugal", "kitalar": ["EU"]}, 
@@ -33,7 +30,6 @@ BASE_POTS = {
         {"isim": "Saudi Arabia", "kitalar": ["AS"]}, {"isim": "South Africa", "kitalar": ["AF"]}
     ],
     4: [
-        # Sabit 4. Torba
         {"isim": "Jordan", "kitalar": ["AS"]}, {"isim": "Cabo Verde", "kitalar": ["AF"]},
         {"isim": "Ghana", "kitalar": ["AF"]}, {"isim": "Curaçao", "kitalar": ["NA"]},
         {"isim": "Haiti", "kitalar": ["NA"]}, {"isim": "New Zealand", "kitalar": ["OC"]}
@@ -42,79 +38,58 @@ BASE_POTS = {
 
 def check_valid_group(group, new_team):
     """
-    Grup kurallarını kontrol eder.
-    new_team: Eklenecek aday takım
+    Validates if a team can be added to a group based on FIFA constraints:
+    1. Max 2 European teams per group. (at least 1)
+    2. No other confederation can have more than 1 team per group.
     """
-    eu_count = 0
-    
-    # Yeni takımın yasaklı kıtaları (Set kümesi olarak)
+    eu_count = sum(1 for member in group if "EU" in member['kitalar'])
     new_team_continents = set(new_team['kitalar'])
     
-    # 1. AVRUPA SAYISI KONTROLÜ
-    # Gruptaki mevcut Avrupalıları say
-    for member in group:
-        if "EU" in member['kitalar']:
-            eu_count += 1
-            
-    # Eğer yeni takım Avrupalıysa (veya Avrupa ihtimali varsa) ve kota dolduysa
+    # Rule 1: UEFA Limit
     if "EU" in new_team_continents and eu_count >= 2:
         return False
 
-    # 2. KITA ÇAKIŞMASI KONTROLÜ (Composite Constraint)
+    # Rule 2: Continental Separation (Composite Constraint for Play-offs)
     for member in group:
         member_continents = set(member['kitalar'])
-        
-        # İki kümenin kesişimini al (Ortak kıtalar)
         intersection = new_team_continents.intersection(member_continents)
         
-        # Eğer ortak kıta varsa:
         if intersection:
-            # Eğer ortak olan tek şey Avrupa ise sorun yok (Max 2 kuralı zaten yukarıda bakıldı)
             if intersection == {"EU"}:
                 continue
-            # Avrupa dışında bir çakışma varsa (Örn: NA ile NA, veya [NA,AF] ile NA) -> YASAK
             else:
-                return False
-                
+                return False 
     return True
 
 def check_final_distribution(groups):
+    """ Ensures every group has at least one European team. """
     for group in groups:
-        # Her grupta en az 1 Avrupa olmalı
-        # (Basitlik adına: İçinde 'EU' barındıran herhangi bir takım varsa sayar)
-        has_eu = False
-        for t in group:
-            if "EU" in t['kitalar']:
-                has_eu = True
-                break
+        has_eu = any("EU" in t['kitalar'] for t in group)
         if not has_eu:
             return False
     return True
 
 def draw_simulation(user_playoff_winners):
-    # Veri setini kopyala
+    """ Executes the draw logic using backtracking/random shuffling. """
     pots = {k: [t.copy() for t in v] for k, v in BASE_POTS.items()}
-    
-    # 4. Torbaya Play-off kazananlarını (veya placeholderlarını) ekle
-    # Frontend'den gelen veri yapısı: {"isim": "...", "kitalar": ["NA", "AF"]} şeklinde olmalı
     pots[4].extend(user_playoff_winners)
     
     groups = [[] for _ in range(12)]
-    group_names = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+    group_names = list("ABCDEFGHIJKL")
 
-    # --- ADIM 1: EV SAHİPLERİ ---
+    # Step 1: Assign Hosts
     groups[0].append({"isim": "Mexico", "kitalar": ["NA"]})
     groups[1].append({"isim": "Canada", "kitalar": ["NA"]})
     groups[3].append({"isim": "USA", "kitalar": ["NA"]})
 
-    # --- ADIM 2: 1. TORBA DAĞITIM ---
+    # Step 2: Distribute Pot 1
     current_pot1 = pots[1][:]
     random.shuffle(current_pot1)
     for i in range(12):
         if len(groups[i]) == 0:
             groups[i].append(current_pot1.pop(0))
 
-    # --- ADIM 3: DİĞER TORBALAR ---
+    # Step 3: Distribute Pots 2-4
     for pot_num in range(2, 5):
         current_pot = pots[pot_num][:]
         random.shuffle(current_pot)
@@ -128,24 +103,22 @@ def draw_simulation(user_playoff_winners):
                     current_pot.remove(team)
                     placed = True
                     break
-            if not placed: return None # Deadlock
+            if not placed: return None
 
     if not check_final_distribution(groups): return None
     
-    # Sonuç Formatı (Frontend için tek bir 'kita' stringi dönmek yeterli görsellik için)
+    # Format Result
     result = []
     for idx, group_data in enumerate(groups):
         formatted_teams = []
         for t in group_data:
-            # Görsel olarak ilk kıtayı veya özel stringi gösterelim
             display_kita = t['kitalar'][0] if len(t['kitalar']) == 1 else "MIXED"
             formatted_teams.append({"isim": t['isim'], "kita": display_kita})
             
-        result.append({
-            "name": group_names[idx],
-            "teams": formatted_teams
-        })
+        result.append({"name": group_names[idx], "teams": formatted_teams})
     return result
+
+# --- ROUTES ---
 
 @app.route('/')
 def index():
@@ -162,35 +135,51 @@ def analysis_page():
 @app.route('/api/draw', methods=['POST'])
 def api_draw():
     data = request.json
-    # Frontend'den gelen play-off verisi.
-    # Eğer "Simülasyona Bırak" denildiyse veya analiz yapılıyorsa,
-    # burada "Placeholder" mantığını kullanacağız.
-    playoff_winners = data.get('playoff_winners', [])
+    raw_playoff_winners = data.get('playoff_winners', [])
     
-    # Hata önleyici: Eğer boş gelirse varsayılanları koy
-    if not playoff_winners:
-        # Varsayılan (Placeholder) Yapı
-        playoff_winners = [
+    cleaned_winners = []
+    
+    # Default placeholder data if request is empty
+    if not raw_playoff_winners:
+        cleaned_winners = [
             {"isim": "UEFA Path A", "kitalar": ["EU"]},
             {"isim": "UEFA Path B", "kitalar": ["EU"]},
-            {"isim": "Türkiye", "kitalar": ["EU"]}, # Varsayılan biz olalım
+            {"isim": "Türkiye", "kitalar": ["EU"]},
             {"isim": "UEFA Path D", "kitalar": ["EU"]},
-            {"isim": "FIFA PO 1", "kitalar": ["NA", "AF", "OC"]}, # KARIŞIK KITA!
-            {"isim": "FIFA PO 2", "kitalar": ["AS", "SA", "NA"]}  # KARIŞIK KITA!
+            {"isim": "FIFA PO 1", "kitalar": ["NA", "AF", "OC"]},
+            {"isim": "FIFA PO 2", "kitalar": ["AS", "SA", "NA"]}
         ]
+    else:
+        # Process and normalize input data
+        for team in raw_playoff_winners:
+            new_team = team.copy()
+            if 'kitalar' not in new_team:
+                new_team['kitalar'] = [new_team['kita']] if 'kita' in new_team else ["EU"]
+            
+            # Apply composite constraints for FIFA Play-offs
+            po1_keywords = ["FIFA PO 1", "Jamaica", "DR Congo", "New Caledonia", "Y. Kaledonya", "DK Kongo", "Jamaika"]
+            if any(k in new_team['isim'] for k in po1_keywords):
+                new_team['kitalar'] = ["NA", "AF", "OC"]
+                
+            po2_keywords = ["FIFA PO 2", "Iraq", "Bolivia", "Suriname", "Irak", "Bolivya", "Surinam"]
+            if any(k in new_team['isim'] for k in po2_keywords):
+                new_team['kitalar'] = ["AS", "SA", "NA"]
+                
+            cleaned_winners.append(new_team)
 
+    # Attempt draw generation
     success = False
     result = None
     attempt = 0
     
     while not success and attempt < 5000:
         attempt += 1
-        result = draw_simulation(playoff_winners)
+        result = draw_simulation(cleaned_winners)
         if result is not None:
             success = True
             
     if not success:
-        return jsonify({"error": "Uygun kura bulunamadı, kısıtlar çok sıkı!"}), 500
+        return jsonify({"error": "Valid draw configuration not found. Please try again."}), 500
         
     return jsonify(result)
 
