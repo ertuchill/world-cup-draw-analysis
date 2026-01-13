@@ -10,6 +10,7 @@
 </p>
 
 > 💡 **Note:** Since the project is hosted on a free tier, the initial load may take around **30-40 seconds** as the server "wakes up." Thank you for your patience.
+
 This project is a full-stack web application designed to simulate the official FIFA World Cup 2026 group stage draw. It implements complex FIFA-mandated constraints and analyzes the resulting matchup probabilities through large-scale simulations.
 
 ## 🎥 Project Presentation
