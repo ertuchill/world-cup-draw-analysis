@@ -9,13 +9,13 @@
   </a>
 </p>
 
+> 💡 **Note:** Since the project is hosted on a free tier, the initial load may take around **30-40 seconds** as the server "wakes up." Thank you for your patience.
 This project is a full-stack web application designed to simulate the official FIFA World Cup 2026 group stage draw. It implements complex FIFA-mandated constraints and analyzes the resulting matchup probabilities through large-scale simulations.
 
 ## 🎥 Project Presentation
 Check out the video where I explain the technical details, algorithm logic, and show the simulation in action:
 
 [![World Cup 2026 Simulation Walkthrough](https://img.youtube.com/vi/pK6W1DT9OQM/0.jpg)](https://www.youtube.com/watch?v=pK6W1DT9OQM)
-> 💡 **Note:** Since the project is hosted on a free tier, the initial load may take around **30-40 seconds** as the server "wakes up." Thank you for your patience.
 
 ## 🎯 The Problem & Solution
 FIFA's draw rules—such as geographical separation (except for UEFA) and group limits—significantly skew the probability of certain matchups. To address this, I developed:
