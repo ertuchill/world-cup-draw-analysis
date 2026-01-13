@@ -7,6 +7,8 @@ FIFA's draw rules—such as geographical separation (except for UEFA) and group 
 * **A Draw Engine:** A validation-based system that ensures every generated draw follows 100% of the official tournament rules.
 * **An Analysis Engine:** A Python-based Monte Carlo simulation that runs **10,000+ iterations** to calculate and visualize the likelihood of each country facing specific opponents.
 
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=render)https://two026-world-cup-draw-simulation.onrender.com
+
 ## 🎥 Project Presentation
 Check out the video where I explain the technical details and show the simulation in action:
 [**Watch the Project Walkthrough on YouTube**]https://youtube.com/watch/pK6W1DT9OQM?si=YM-QSC0MCAl4pXs_
